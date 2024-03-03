@@ -1,9 +1,9 @@
 /*
-  ==============================================================================
+    ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin processor.
+        This file contains the basic framework code for a JUCE plugin processor.
 
-  ==============================================================================
+    ==============================================================================
 */
 
 #include "PluginProcessor.h"
@@ -36,11 +36,11 @@ const juce::String EZAudioEffectsAudioProcessor::getName() const
 
 bool EZAudioEffectsAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
+    #if JucePlugin_WantsMidiInput
+        return true;
+    #else
+        return false;
+    #endif
 }
 
 bool EZAudioEffectsAudioProcessor::producesMidi() const
@@ -54,11 +54,11 @@ bool EZAudioEffectsAudioProcessor::producesMidi() const
 
 bool EZAudioEffectsAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
+    #if JucePlugin_IsMidiEffect
+        return true;
+    #else
+        return false;
+    #endif
 }
 
 double EZAudioEffectsAudioProcessor::getTailLengthSeconds() const
@@ -95,6 +95,18 @@ void EZAudioEffectsAudioProcessor::prepareToPlay (double sampleRate, int samples
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+    juce::dsp::ProcessSpec spec;
+
+    spec.maximumBlockSize = samplesPerBlock;
+
+    spec.numChannels = 1;
+
+    spec.sampleRate = sampleRate;
+
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
+
 }
 
 void EZAudioEffectsAudioProcessor::releaseResources()
@@ -106,26 +118,26 @@ void EZAudioEffectsAudioProcessor::releaseResources()
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool EZAudioEffectsAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
+    #if JucePlugin_IsMidiEffect
+        juce::ignoreUnused (layouts);
+        return true;
+    #else
+        // This is the place where you check if the layout is supported.
+        // In this template code we only support mono or stereo.
+        // Some plugin hosts, such as certain GarageBand versions, will only
+        // load plugins that support stereo bus layouts.
+        if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+            return false;
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
+        // This checks if the input layout matches the output layout
+    #if ! JucePlugin_IsSynth
+        if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+            return false;
+    #endif
 
-    return true;
-  #endif
+        return true;
+    #endif
 }
 #endif
 
@@ -144,18 +156,19 @@ void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    juce::dsp::AudioBlock<float> block(buffer);
 
-        // ..do something to the data...
-    }
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+
+    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
+
+
+
 }
 
 //==============================================================================
@@ -166,7 +179,9 @@ bool EZAudioEffectsAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* EZAudioEffectsAudioProcessor::createEditor()
 {
-    return new EZAudioEffectsAudioProcessorEditor (*this);
+    //return new EZAudioEffectsAudioProcessorEditor (*this);
+
+    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================
@@ -182,6 +197,65 @@ void EZAudioEffectsAudioProcessor::setStateInformation (const void* data, int si
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
+
+juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor::createParameterLayout()
+{
+    juce::AudioProcessorValueTreeState::ParameterLayout layout;
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "LowCut Freq",
+        "LowCut Freq",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        20.f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "HighCut Freq",
+        "HighCut Freq",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        20000.f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "Peak Freq",
+        "Peak Freq",
+        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        750.f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "Peak Gain",
+        "Peak Gain",
+        juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+        0.0f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "Peak Quality",
+        "Peak Quality",
+        juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+        1.f
+    ));
+
+    ///juce::AudioParameterChoice()
+
+    juce::StringArray stringArray;
+    for(int i = 0; i < 4; ++i) 
+    {
+        juce::String str;
+        str << (12 + (i * 12));
+        str << " db/Oct";
+        stringArray.add(str);
+    }
+
+
+    layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
+
+
+    return layout;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..
