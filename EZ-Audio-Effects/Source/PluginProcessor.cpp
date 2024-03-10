@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
 EZAudioEffectsAudioProcessor::EZAudioEffectsAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -24,15 +25,18 @@ EZAudioEffectsAudioProcessor::EZAudioEffectsAudioProcessor()
 {
 }
 
+
 EZAudioEffectsAudioProcessor::~EZAudioEffectsAudioProcessor()
 {
 }
 
+
 //==============================================================================
-const juce::String EZAudioEffectsAudioProcessor::getName() const
+const juce::String EZAudioEffectsAudioProcessor::getName() const 
 {
     return JucePlugin_Name;
 }
+
 
 bool EZAudioEffectsAudioProcessor::acceptsMidi() const
 {
@@ -43,14 +47,16 @@ bool EZAudioEffectsAudioProcessor::acceptsMidi() const
     #endif
 }
 
+
 bool EZAudioEffectsAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
+    #if JucePlugin_ProducesMidiOutput
+        return true;
+    #else
+        return false;
+    #endif
 }
+
 
 bool EZAudioEffectsAudioProcessor::isMidiEffect() const
 {
@@ -61,10 +67,12 @@ bool EZAudioEffectsAudioProcessor::isMidiEffect() const
     #endif
 }
 
+
 double EZAudioEffectsAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
+
 
 int EZAudioEffectsAudioProcessor::getNumPrograms()
 {
@@ -72,23 +80,28 @@ int EZAudioEffectsAudioProcessor::getNumPrograms()
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
+
 int EZAudioEffectsAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
+
 void EZAudioEffectsAudioProcessor::setCurrentProgram (int index)
 {
 }
+
 
 const juce::String EZAudioEffectsAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
+
 void EZAudioEffectsAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
+
 
 //==============================================================================
 void EZAudioEffectsAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
@@ -107,13 +120,25 @@ void EZAudioEffectsAudioProcessor::prepareToPlay (double sampleRate, int samples
     leftChain.prepare(spec);
     rightChain.prepare(spec);
 
+    updateFilters();
+
+    leftChannelFifo.prepare(samplesPerBlock);
+    rightChannelFifo.prepare(samplesPerBlock);
+
+    osc.initialise([](float x) { return std::sin(x); });
+
+    spec.numChannels = getTotalNumOutputChannels();
+    osc.prepare(spec);
+    osc.setFrequency(440);
 }
+
 
 void EZAudioEffectsAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
+
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool EZAudioEffectsAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -141,10 +166,11 @@ bool EZAudioEffectsAudioProcessor::isBusesLayoutSupported (const BusesLayout& la
 }
 #endif
 
+
 void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
@@ -154,7 +180,9 @@ void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
+
+    updateFilters();
 
     juce::dsp::AudioBlock<float> block(buffer);
 
@@ -167,9 +195,10 @@ void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     leftChain.process(leftContext);
     rightChain.process(rightContext);
 
-
-
+    leftChannelFifo.update(buffer);
+    rightChannelFifo.update(buffer);
 }
+
 
 //==============================================================================
 bool EZAudioEffectsAudioProcessor::hasEditor() const
@@ -177,12 +206,12 @@ bool EZAudioEffectsAudioProcessor::hasEditor() const
     return true; // (change this to false if you choose to not supply an editor)
 }
 
+
 juce::AudioProcessorEditor* EZAudioEffectsAudioProcessor::createEditor()
 {
-    //return new EZAudioEffectsAudioProcessorEditor (*this);
-
     return new juce::GenericAudioProcessorEditor(*this);
 }
+
 
 //==============================================================================
 void EZAudioEffectsAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
@@ -190,13 +219,98 @@ void EZAudioEffectsAudioProcessor::getStateInformation (juce::MemoryBlock& destD
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+
+    juce::MemoryOutputStream mos(destData, true);
+    apvts.state.writeToStream(mos);
 }
+
 
 void EZAudioEffectsAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+
+    auto tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid())
+    {
+        apvts.replaceState(tree);
+        updateFilters();
+    }
 }
+
+
+ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
+{
+    ChainSettings settings;
+
+    settings.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
+    settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
+    settings.peakFreq = apvts.getRawParameterValue("Peak Freq")->load();
+    settings.peakGainInDecibels = apvts.getRawParameterValue("Peak Gain")->load();
+    settings.peakQuality = apvts.getRawParameterValue("Peak Quality")->load();
+    settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
+    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("HighCut Slope")->load());
+
+    return settings;
+}
+
+
+Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
+{
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+        chainSettings.peakFreq,
+        chainSettings.peakQuality,
+        juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+}
+
+
+void EZAudioEffectsAudioProcessor::updatePeakFilter(const ChainSettings& chainSettings)
+{
+    auto peakCoefficients = makePeakFilter(chainSettings, getSampleRate());
+
+    updateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+    updateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+}
+
+
+void updateCoefficients(Coefficients& old, const Coefficients& replacements)
+{
+    *old = *replacements;
+}
+
+
+void EZAudioEffectsAudioProcessor::updateLowCutFilters(const ChainSettings& chainSettings)
+{
+    auto cutCoefficients = makeLowCutFilter(chainSettings, getSampleRate());
+    auto& leftLowCut = leftChain.get<ChainPositions::LowCut>();
+    auto& rightLowCut = rightChain.get<ChainPositions::LowCut>();
+
+    updateCutFilter(rightLowCut, cutCoefficients, chainSettings.lowCutSlope);
+    updateCutFilter(leftLowCut, cutCoefficients, chainSettings.lowCutSlope);
+}
+
+
+void EZAudioEffectsAudioProcessor::updateHighCutFilters(const ChainSettings& chainSettings)
+{
+    auto highCutCoefficients = makeHighCutFilter(chainSettings, getSampleRate());
+
+    auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
+    auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
+
+    updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
+    updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
+}
+
+
+void EZAudioEffectsAudioProcessor::updateFilters()
+{
+    auto chainSettings = getChainSettings(apvts);
+
+    updateLowCutFilters(chainSettings);
+    updatePeakFilter(chainSettings);
+    updateHighCutFilters(chainSettings);
+}
+
 
 juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor::createParameterLayout()
 {
@@ -237,8 +351,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
         1.f
     ));
 
-    ///juce::AudioParameterChoice()
-
     juce::StringArray stringArray;
     for(int i = 0; i < 4; ++i) 
     {
@@ -248,10 +360,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
         stringArray.add(str);
     }
 
-
     layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
-
 
     return layout;
 }

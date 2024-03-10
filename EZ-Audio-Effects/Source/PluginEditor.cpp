@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+
 //==============================================================================
 EZAudioEffectsAudioProcessorEditor::EZAudioEffectsAudioProcessorEditor (EZAudioEffectsAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
@@ -18,9 +19,11 @@ EZAudioEffectsAudioProcessorEditor::EZAudioEffectsAudioProcessorEditor (EZAudioE
     setSize (400, 300);
 }
 
+
 EZAudioEffectsAudioProcessorEditor::~EZAudioEffectsAudioProcessorEditor()
 {
 }
+
 
 //==============================================================================
 void EZAudioEffectsAudioProcessorEditor::paint (juce::Graphics& g)
@@ -32,6 +35,7 @@ void EZAudioEffectsAudioProcessorEditor::paint (juce::Graphics& g)
     g.setFont (15.0f);
     g.drawFittedText ("Hello World!", getLocalBounds(), juce::Justification::centred, 1);
 }
+
 
 void EZAudioEffectsAudioProcessorEditor::resized()
 {
