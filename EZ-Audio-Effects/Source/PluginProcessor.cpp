@@ -112,15 +112,15 @@ void EZAudioEffectsAudioProcessor::prepareToPlay (double sampleRate, int samples
     juce::dsp::ProcessSpec spec;
 
     spec.maximumBlockSize = samplesPerBlock;
-
     spec.numChannels = 1;
-
     spec.sampleRate = sampleRate;
 
     leftChain.prepare(spec);
     rightChain.prepare(spec);
+    reverb.prepare(spec);
 
     updateFilters();
+    updateReverbParams();
 
     leftChannelFifo.prepare(samplesPerBlock);
     rightChannelFifo.prepare(samplesPerBlock);
@@ -183,6 +183,7 @@ void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         buffer.clear(i, 0, buffer.getNumSamples());
 
     updateFilters();
+    updateReverbParams();
 
     juce::dsp::AudioBlock<float> block(buffer);
 
@@ -191,12 +192,15 @@ void EZAudioEffectsAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 
     juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
     juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
+    juce::dsp::ProcessContextReplacing<float> ctx(block);
 
     leftChain.process(leftContext);
     rightChain.process(rightContext);
 
     leftChannelFifo.update(buffer);
     rightChannelFifo.update(buffer);
+
+    reverb.process(ctx);
 }
 
 
@@ -235,6 +239,7 @@ void EZAudioEffectsAudioProcessor::setStateInformation (const void* data, int si
     {
         apvts.replaceState(tree);
         updateFilters();
+        updateReverbParams();
     }
 }
 
@@ -255,12 +260,17 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
 }
 
 
+
+
+
 Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
 {
-    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
+    return juce::dsp::IIR::Coefficients<float>::makePeakFilter(
+        sampleRate,
         chainSettings.peakFreq,
         chainSettings.peakQuality,
-        juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels));
+        juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels)
+    );
 }
 
 
@@ -293,12 +303,26 @@ void EZAudioEffectsAudioProcessor::updateLowCutFilters(const ChainSettings& chai
 void EZAudioEffectsAudioProcessor::updateHighCutFilters(const ChainSettings& chainSettings)
 {
     auto highCutCoefficients = makeHighCutFilter(chainSettings, getSampleRate());
-
     auto& leftHighCut = leftChain.get<ChainPositions::HighCut>();
     auto& rightHighCut = rightChain.get<ChainPositions::HighCut>();
 
     updateCutFilter(leftHighCut, highCutCoefficients, chainSettings.highCutSlope);
     updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
+}
+
+
+void EZAudioEffectsAudioProcessor::updateReverbParams()
+{
+    float reverbValue = apvts.getRawParameterValue("Reverb Value")->load();
+
+    reverbParams.roomSize = reverbValue * 0.01f;
+    reverbParams.damping = reverbValue * 0.01f;
+    reverbParams.width = reverbValue * 0.01f;
+    reverbParams.wetLevel = reverbValue * 0.01f;
+    reverbParams.dryLevel = 1.0f - reverbValue * 0.01f;
+    reverbParams.freezeMode = 0;
+
+    reverb.setParameters(reverbParams);
 }
 
 
@@ -349,6 +373,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
         "Peak Quality",
         juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
         1.f
+    ));
+
+    layout.add(std::make_unique<juce::AudioParameterFloat>(
+        "Reverb Value",
+        "Reverb Value",
+        juce::NormalisableRange<float>(0.f, 100.f, 1.f, 1.f),
+        0.f
     ));
 
     juce::StringArray stringArray;
