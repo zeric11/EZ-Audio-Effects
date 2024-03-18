@@ -9,7 +9,7 @@ Eric Zmitrovich
 
 2. Download the [JUCE](https://juce.com/download/) framework.
 
-3. Open `EZ-Audio-Effect.jucer` using Projucer.
+3. Open and save `EZ-Audio-Effect.jucer` using Projucer.
     Projucer can be found in `JUCE\extras\Projucer\Builds`. 
     Select the build according to your operating system.
 
@@ -41,6 +41,14 @@ The reverb consists of 5 parameters:
 
 For simplicity, the reverb value is used to scale
 all of these parameters simultaneously.
+
+
+## Testing
+
+To test this project, I used the JUCE Audio Plugin Host 
+with the [vstPlayer](https://miraxlabs.com/products/vstplayer/).
+The Audio Plugin Host is located in `JUCE\extras\AudioPluginHost\Builds`.
+The filter graph I used is located in `Filtergraph.filtergraph`.
 
 
 ## Project Reflection
@@ -77,13 +85,9 @@ I only finished 2 of the 4 audio effects I had originally planned on,
 and didn't I get to implement the equalizer and reverb the way I wanted to.
 
 
+## License
 
-
-
-
-
-
-
+See the [LICENSE](LICENSE.md) file for license rights and limitations (MIT).
 
 
 ### Resources Used
@@ -101,3 +105,5 @@ https://docs.juce.com/master/classdsp_1_1Reverb.html
 https://docs.juce.com/master/classdsp_1_1Phaser.html
 
 https://docs.juce.com/master/classdsp_1_1Compressor.html
+
+https://github.com/matkatmusic/AudioFilePlayer

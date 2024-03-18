@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FILTERGRAPH>
+  <FILTER uid="1" x="0.5725" y="0.08851674641148326" useARA="0">
+    <PLUGIN name="Audio Input" descriptiveName="" format="Internal" category="I/O devices"
+            manufacturer="JUCE" version="1.0" file="" uniqueId="246006c0"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="0"
+            numOutputs="2" isShell="0" hasARAExtension="0" uid="246006c0"/>
+    <STATE>0.</STATE>
+    <LAYOUT>
+      <INPUTS>
+        <BUS index="0" layout="disabled"/>
+      </INPUTS>
+      <OUTPUTS>
+        <BUS index="0" layout="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <FILTER uid="3" x="0.47125" y="0.902200488997555" useARA="0">
+    <PLUGIN name="Audio Output" descriptiveName="" format="Internal" category="I/O devices"
+            manufacturer="JUCE" version="1.0" file="" uniqueId="724248cb"
+            isInstrument="0" fileTime="0" infoUpdateTime="0" numInputs="64"
+            numOutputs="0" isShell="0" hasARAExtension="0" uid="724248cb"/>
+    <STATE>0.</STATE>
+    <LAYOUT>
+      <INPUTS>
+        <BUS index="0" layout="L R"/>
+      </INPUTS>
+      <OUTPUTS>
+        <BUS index="0" layout="disabled"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <FILTER uid="5" x="0.4675" y="0.6210268948655256" useARA="0" uiLastX_Normal="3095"
+          uiLastY_Normal="562" uiopen_Normal="0">
+    <PLUGIN name="EZ-Audio-Effects" format="VST3" category="Fx" manufacturer="yourcompany"
+            version="1.0.0" file="E:\PSU\CS\CS 510 Sound and Audio\EZ-Audio-Effects\EZ-Audio-Effects\Builds\VisualStudio2022\x64\Debug\VST3\EZ-Audio-Effects.vst3\Contents\x86_64-win\EZ-Audio-Effects.vst3"
+            uniqueId="f495d523" isInstrument="0" fileTime="18e527311f8" infoUpdateTime="18e53c09004"
+            numInputs="2" numOutputs="2" isShell="0" hasARAExtension="0"
+            uid="e95437ea"/>
+    <STATE>996.VMjLgr8....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9XiMy3BTEwlXmAiUYoWUrIVdA4hKAomKTETRUAUSAAkKBolQY4BQlQTQDoVXmcmUjUSUrIlYToVXmkjQgsVTF4RLEYTXvTkQtDjZtDjKt3hKt3hKtX2JC4BTEoFUAACQtDDRPokZAAkKRQkKR81XFo0PUczXlgDUjYWQwHVdUYTVtf0UXIWUWkkKDAkPD4hKt3hKt3hKt3hKt3RUPIUQTMkKDYlKuEkQtDzLPEDRqESVt0DUioWPnEEdUYkXtf0UXIWUWkkKDAkPD4hKt3hKt3BRNwDTt3RUPIUQTMkKDYlKuEkQtDzMPEDRqESVt0DUioWP3Qkb3XjXqEjYic1cVM1ZAAkKIAkKt3hKt3hKt3hKt3hKTETRUAUSAAkKBolQY4BQPQTQ1oWXxzDUioWPnAEMAcEV40zUYoVPlM1Y2Y0XqEDTtjDTt3hKt3hKt3hKt3hKtPUPIUETMEDTtHjZFkkKDA0PEYmdgISSTMldAgVT3UkUh4BVWgkbUcUVtPDTBQjKt3hKt3hKt.0PP4hKUAkTEQ0TtPjYt7VTF4RPy.UPLgSLiMTUGMlYLUTX0EzUY4BVWgkbUcUVtPDTBQjKt3hKt3hKt3hKt3hKUAkTEQ0TtPjYt7VTF4RP2.UPPUkUXEWPnAEMAcEV40zUYoVPlM1Y2Y0XqEDTtjDTt3hKt3hKt3hKt3hKtPUPIUETMEDTtHjZFkkKDYmPE4RUYc1bFgjQIcUV2EjYic1cVM1ZAAkKIAkKt3hKt3hKt.ibtDjKTETRUAUSAAkKBolQY4BQ1ITQtTUVmMmQHcTQVoEcAY1XmcmUisVPP4RRP4hKt3hKt3hKt3hKA4BUAkTUP0TPP4hPpYTVtPjYCUjKUk0YyYDRQU0UXI2ZFMFMAY1XmcmUisVPP4RRP4hKt3hKt3hKtbyJt3BUAkTUP0TPP4hPpYTVtPjKCUjKUk0YyYDRWslQYo2YF4RLEYTXvTkQtDjZtDjKt3hKt3hKtbkKD4BTEoFUAACQtDDRPokZAAkKNQkYTsVVWkEdIYDRVUjQgASUF4RLEYTXvTkQtDjZtDjKt3hKt3hKtnTPD4hKt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQtDDQlAEMAcEV40zQtDDQ14hK5EjKt3hKt3hKt3hRUACTEEzZh8VVWgkdUYTTmE0UXwyKIMzasA2atUlaz4COuX0TTMCTrU2Yo41TzEFck4C.</STATE>
+    <LAYOUT>
+      <INPUTS>
+        <BUS index="0" layout="L R"/>
+      </INPUTS>
+      <OUTPUTS>
+        <BUS index="0" layout="L R"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <FILTER uid="16" x="0.46125" y="0.3276283618581907" useARA="0" uiLastX_Normal="1408"
+          uiLastY_Normal="495" uiopen_Normal="0">
+    <PLUGIN name="vstPlayer" format="VST3" category="Instrument|Synth" manufacturer="Mirax Labs"
+            version="3.0.116" file="C:\Program Files\Common Files\VST3\vstPlayer.vst3"
+            uniqueId="8fdefd46" isInstrument="1" fileTime="18df8488a00" infoUpdateTime="18e53c09004"
+            numInputs="0" numOutputs="0" isShell="0" hasARAExtension="0"
+            uid="ee63cfc"/>
+    <STATE>743.VMjLg3s....O+fWarAhckI2bo8la8HRLt.iHfTlai8FYo41Y8HRUTYTK3HxO9.BOVMEUy.Ea0cVZtMEcgQWY9vSRC8Vav8lak4Fc9PyMy3hUMczXWEjKt3hYt3hKt.kKt3hKt3BS5gEcyQjKtPDT1YTR5AkaA4hKtfjYikWTGIlKL4hK5EjKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKt3hKAoFZUMTRSgjZC4hKtXWdOMCLFElYXcUV30zUZUGMV8DZDk1R1gjPHsFMwfUcQYkVzMlUOgFUEUkQvHjSncSZOYlcCE1YMczXlQ0UZc0ZFkkdmY0SnY1PLYGRBgDLqYjTqsVLY4VTW8DZTMDS1gjPHY2cVgEM2YkV4EkLSQGLogzcHIDR3UkQhsVQFMFNHIDSn4BZiU2cVM1bUY0SnQTZKYGRBgjcEY0X4UkQYgCRRwDZtfmXzPSLXgCRBwDZyLzS1cmUXQycVoUdQ01S2fkUZIWUFgDcEYUXqASZHMzaCcUUMcUV30zQWsVRWoUZuczUOQiUYQTRWoULUYzUDUULhEWTxDlc2UjT0E0UYIWP3A0Y2YkVrgCahQ2ZVgEc5YjX4gDdKkic4sjc2YEVzbmUZkWTs8zM2HTXm0zQikiKt3hKt3hKt3hKt3haTU0PUQDU3sFaicVTWkEQEYzXmEDTtDDRTQlcEEiX4EDTtDDSt3xXt3hKt3hKt3hKlIUUMQUTPkzUZESQFM1ZQQEV5UjQ77RRC8Vav8lak4Fc9vyKVMEUy.Ea0cVZtMEcgQWY9..</STATE>
+    <LAYOUT>
+      <INPUTS>
+        <BUS index="0" layout="L R"/>
+      </INPUTS>
+      <OUTPUTS>
+        <BUS index="0" layout="L R"/>
+      </OUTPUTS>
+    </LAYOUT>
+  </FILTER>
+  <CONNECTION srcFilter="5" srcChannel="0" dstFilter="3" dstChannel="0"/>
+  <CONNECTION srcFilter="5" srcChannel="1" dstFilter="3" dstChannel="1"/>
+  <CONNECTION srcFilter="16" srcChannel="0" dstFilter="5" dstChannel="0"/>
+  <CONNECTION srcFilter="16" srcChannel="1" dstFilter="5" dstChannel="1"/>
+</FILTERGRAPH>
