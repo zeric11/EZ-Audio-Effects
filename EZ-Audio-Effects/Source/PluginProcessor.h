@@ -303,8 +303,6 @@ public:
     SingleChannelSampleFifo<BlockType> leftChannelFifo{ Channel::Left };
     SingleChannelSampleFifo<BlockType> rightChannelFifo{ Channel::Right };
 
-
-
 private:
     MonoChain leftChain, rightChain;
 
