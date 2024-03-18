@@ -26,9 +26,9 @@ struct Fifo
             buffer.setSize(
                 numChannels,
                 numSamples,
-                false,  //clear everything?
-                true,   //including the extra space?
-                true    //avoid reallocating if you can?
+                false,
+                true,
+                true
             );   
             buffer.clear();
         }
@@ -169,10 +169,12 @@ enum Slope
 
 struct ChainSettings
 {
-    float peakFreq{ 0 }, peakGainInDecibels{ 0 }, peakQuality{ 1.f };
+    float peakFreq{ 0 }, peakGainInDecibels{ 0 }, peakWidth{ 1.f };
     float lowCutFreq{ 0 }, highCutFreq{ 0 };
 
-    Slope lowCutSlope{ Slope::Slope_12 }, highCutSlope{ Slope::Slope_12 };
+    Slope lowCutSlope{ Slope::Slope_48 }, highCutSlope{ Slope::Slope_48 };
+
+    bool lowCutBypassed{ false }, peakBypassed{ false }, highCutBypassed{ false };
 };
 
 

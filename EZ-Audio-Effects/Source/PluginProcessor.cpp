@@ -252,15 +252,10 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
     settings.peakFreq = apvts.getRawParameterValue("Peak Freq")->load();
     settings.peakGainInDecibels = apvts.getRawParameterValue("Peak Gain")->load();
-    settings.peakQuality = apvts.getRawParameterValue("Peak Quality")->load();
-    settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
-    settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("HighCut Slope")->load());
+    settings.peakWidth = apvts.getRawParameterValue("Peak Width")->load();
 
     return settings;
 }
-
-
-
 
 
 Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
@@ -268,7 +263,7 @@ Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRat
     return juce::dsp::IIR::Coefficients<float>::makePeakFilter(
         sampleRate,
         chainSettings.peakFreq,
-        chainSettings.peakQuality,
+        chainSettings.peakWidth,
         juce::Decibels::decibelsToGain(chainSettings.peakGainInDecibels)
     );
 }
@@ -343,21 +338,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "LowCut Freq",
         "LowCut Freq",
-        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        juce::NormalisableRange<float>(20.f, 2000.f, 1.f, 1.f),
         20.f
     ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "HighCut Freq",
         "HighCut Freq",
-        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        juce::NormalisableRange<float>(2000.f, 10000.f, 1.f, 1.f),
         20000.f
     ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
         "Peak Freq",
         "Peak Freq",
-        juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 1.f),
+        juce::NormalisableRange<float>(20.f, 10000.f, 1.f, 1.f),
         750.f
     ));
 
@@ -369,8 +364,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
     ));
 
     layout.add(std::make_unique<juce::AudioParameterFloat>(
-        "Peak Quality",
-        "Peak Quality",
+        "Peak Width",
+        "Peak Width",
         juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
         1.f
     ));
@@ -390,9 +385,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout EZAudioEffectsAudioProcessor
         str << " db/Oct";
         stringArray.add(str);
     }
-
-    layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
-    layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
 
     return layout;
 }
